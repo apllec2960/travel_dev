@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+    <!--bootstrap 5.30 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>
+    <!--Jquery 3.6.3 -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+
+    <!--spectrum pallet -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/spectrum-colorpicker2/dist/spectrum.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/spectrum-colorpicker2/dist/spectrum.min.js"></script>
+
+    <title>Title</title>
+</head>
+<body>
+<!--
+<th:block th:replace="~{/layout/basic :: setContent(~{this :: content})}">
+  <th:block th:fragment="content">
+-->
+    <div class="container">
+        <div class="col-6">
+            <label><b>채팅방</b></label>
+        </div>
+        <div>
+            <canvas id="myCanvas" width="600" height="480"></canvas>
+            <button type="button" id='btnClear' style="vertical-align: top;" onclick="btn_clear();">캔바스 지우기</button>
+            <input id="color-picker" value='#000000' />
+
+            <div id="msgArea" class="col"></div>
+            <div class="col-6">
+                <div class="input-group mb-3">
+                    <input type="text" id="msg" class="form-control" aria-label="Recipient's username" aria-describedby="button-addon2">
+                    <div class="input-group-append">
+                        <button class="btn btn-outline-secondary" type="button" id="button-send" onkeyup="enterMessage();">전송</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<!--
+  </th:block>
+</th:block>
+-->
+</body>
+
+<script th:inline="javascript">
+    /*Canvas*/
+    const canvas = document.getElementById("myCanvas");
+    const ctx = canvas.getContext("2d");
+    let isDrawing = false;
+
+    canvas.addEventListener("mousedown", startDrawing);
+    canvas.addEventListener("mousemove", draw);
+    canvas.addEventListener("mouseup", stopDrawing);
+    canvas.addEventListener("touchstart", startDrawing);
+    canvas.addEventListener("touchmove", draw);
+    canvas.addEventListener("touchend", stopDrawing);
+
+    function startDrawing(event) {
+        isDrawing = true;
+        draw(event);
+    }
+
+    function draw(event) {
+        if (!isDrawing) {
+            return;
+        }
+
+        const x = event.clientX || event.touches[0].clientX;
+        const y = event.clientY || event.touches[0].clientY;
+        ctx.lineTo(x, y);
+        ctx.stroke();
+    }
+
+    function stopDrawing(event) {
+        isDrawing = false;
+    }
+
+    function btn_clear(){
+        ctx.fillStyle = "white";
+        ctx.fillRect(0, 0, 800, 600);
+    }
+
+
+    /*Init*/
+    $(document).ready(function(){
+        //추후 session name으로 변경
+        const username = '이정원';
+
+        $("#disconn").on("click", (e) => {
+            disconnect();
+        })
+
+        $("#button-send").on("click", (e) => {
+          send();
+        });
+
+        const websocket = new WebSocket("ws://localhost:8080/ws/chat"); // 추후 서버 주소로 변경
+
+        websocket.onmessage = onMessage;
+        websocket.onopen = onOpen;
+        websocket.onclose = onClose;
+
+        function send(){
+
+            let msg = document.getElementById("msg");
+
+            console.log(username + ":" + msg.value);
+            websocket.send(username + ":" + msg.value);
+            msg.value = '';
+        }
+
+        //채팅창에서 나갔을 때
+        function onClose(evt) {
+            var str = username + ": 님이 방을 나가셨습니다.";
+            websocket.send(str);
+        }
+
+        //채팅창에 들어왔을 때
+        function onOpen(evt) {
+            var str = username + ": 님이 입장하셨습니다.";
+            websocket.send(str);
+        }
+
+        function onMessage(msg) {
+            var data = msg.data;
+            var sessionId = null;
+            //데이터를 보낸 사람
+            var message = null;
+            var arr = data.split(":");
+
+            for(var i=0; i<arr.length; i++){
+                console.log('arr[' + i + ']: ' + arr[i]);
+            }
+
+            var cur_session = username;
+
+            //현재 세션에 로그인 한 사람
+            console.log("cur_session : " + cur_session);
+            sessionId = arr[0];
+            message = arr[1];
+
+            console.log("sessionID : " + sessionId);
+            console.log("cur_session : " + cur_session);
+
+            //로그인 한 클라이언트와 타 클라이언트를 분류하기 위함
+            if(sessionId == cur_session){
+              var str = "<div class='col-6'>";
+              str += "<div class='alert alert-secondary'>";
+              str += "<b>" + sessionId + " : " + message + "</b>";
+              str += "</div></div>";
+              $("#msgArea").append(str);
+            }
+            else{
+                var str = "<div class='col-6'>";
+                str += "<div class='alert alert-warning'>";
+                str += "<b>" + sessionId + " : " + message + "</b>";
+                str += "</div></div>";
+                $("#msgArea").append(str);
+            }
+        }
+
+
+        /*color-picker*/
+
+        $('#color-picker').spectrum({
+            type: "flat",
+            preferredFormat: "hex",   //hex hex3 hsl rgb name
+            togglePaletteOnly: false,   //줄이기버튼
+            showInput: true,
+            showInitial: true,
+            showButtons: false
+        });
+
+        $("#color-picker").on('move.spectrum', function(e, tinycolor) {
+            const hex = tinycolor.toHex();
+            const rgba = tinycolor.toRgb();
+            console.log(hex);
+            console.log(rgba);
+        });
+    })
+
+
+
+
+
+</script>
+</html>

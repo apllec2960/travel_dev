@@ -1,0 +1,152 @@
+<html lang="en"><head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Login</title>
+
+    <link rel="canonical" href="https://getbootstrap.com/docs/5.0/examples/sign-in/">
+
+    <!--bootstrap 5.30 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>
+    <!--Jquery 3.6.3 -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+    <link th:href="@{/css/signin.css}" rel="stylesheet" />
+    <meta name="theme-color" content="#7952b3">
+
+    <style>
+        .bd-placeholder-img {
+            font-size: 1.125rem;
+            text-anchor: middle;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            user-select: none;
+        }
+
+        @media (min-width: 768px) {
+            .bd-placeholder-img-lg {
+                font-size: 3.5rem;
+            }
+        }
+
+        /*signin*/
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            display: flex;
+            align-items: center;
+            padding-top: 40px;
+            padding-bottom: 40px;
+            background-color: #f5f5f5;
+        }
+
+        .form-signin {
+            width: 100%;
+            max-width: 330px;
+            padding: 15px;
+            margin: auto;
+        }
+
+        .form-signin .checkbox {
+            font-weight: 400;
+        }
+
+        .form-signin .form-floating:focus-within {
+            z-index: 2;
+        }
+
+        .form-signin input[type="email"] {
+            margin-bottom: -1px;
+            border-bottom-right-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+
+        .form-signin input[type="password"] {
+            margin-bottom: 10px;
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
+        }
+    </style>
+
+</head>
+<body class="text-center">
+
+    <main class="form-signin">
+        <form>
+            <h1 class="h3 mb-3 fw-normal">로그인</h1>
+
+            <div class="form-floating">
+                <input type="text" class="form-control" id="loginId" placeholder="사용할 닉네임을 입력해주세요.">
+                <label for="loginId">닉네임</label>
+            </div>
+
+            <button id="login" class="w-100 btn btn-lg btn-primary" type="button">입장</button>
+            <p class="mt-5 mb-3 text-muted">© 2023 jeongwon</p>
+        </form>
+    </main>
+
+
+    <div class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">아이디 입력</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="fn_modalClose();">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>로그인 아이디를 입력해주세요.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="fn_modalClose();">닫기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+
+    function fn_modalOpen(){
+        $('.modal').modal('show');
+    }
+
+    function fn_modalClose(){
+        $('.modal').modal('hide');
+    }
+
+    $("#login").click(function(){
+
+        var loginId = $("#loginId").val();
+        console.log(loginId);
+        if(loginId == null || loginId == "" || loginId == undefined){
+            fn_modalOpen();
+            return;
+        }
+
+
+        var formData = new FormData();
+        formData.append("loginId", loginId);
+
+        $.ajax({
+            url: 'login/login.do',
+            data: formData,
+            dataType: "json",
+            processData: false,
+            contentType: false,
+            type: 'POST',
+            success: function(data){
+                console.log(data);
+                console.log(JSON.stringify(data));
+                location.href = "../";
+            },
+            error : function(xhr, status, error) {
+                console.log('e : ', error);
+            }
+        });
+    });
+
+</script>
+</html>

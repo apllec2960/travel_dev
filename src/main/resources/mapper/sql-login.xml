@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper  namespace="Login">
+
+    <select id="login" parameterType="hashmap" resultType="hashmap">
+        SELECT U.LOGIN_ID AS "loginId"
+              ,U.PASSWORD AS "password"
+          FROM SKE_USER U
+        WHERE U.LOGIN_ID = #{loginId}
+    </select>
+
+</mapper>

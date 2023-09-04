@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper  namespace="Login">
+
+    <select id="selectUser" parameterType="hashmap" resultType="hashmap">
+        SELECT ID         AS "id"
+              ,U.LOGIN_ID AS "loginId"
+              ,U.PASSWORD AS "password"
+          FROM SKE_USER U
+        WHERE U.Id = #{id}
+    </select>
+
+    <insert id="insertUser" parameterType="hashmap">
+        <selectKey resultType="string" keyProperty="id" order="BEFORE">
+            SELECT CONCAT(#{id},LPAD((SELECT IFNULL(COUNT(*),0)+1 FROM SKE_USER),8,0))
+        </selectKey>
+        INSERT INTO SKE_USER(
+            ID
+            ,LOGIN_ID
+            ,PASSWORD
+            ,REG_ID
+            ,MOD_ID
+        )VALUES (
+            #{id}
+            ,#{loginId}
+            ,#{password}
+            ,'SYSTEM'
+            ,'SYSTEM'
+        )
+    </insert>
+
+</mapper>
